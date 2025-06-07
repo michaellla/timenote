@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Analog Clock & Firebase Synced Texxt</title>
+    <title>Eugene's Notes</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 30px;
+            background-color: #ffffff; /* White background */
         }
         canvas {
-            border: 2px solid black;
-        }
-        #clock-text {
-            font-size: 22px;
-            margin: 15px 0;
+            background-color: white; /* White clock face */
+            border-radius: 50%; /* Circular shape */
+            width: 300px;
+            height: 300px;
         }
         #date {
-            font-size: 22px;
-            color: red;
+            font-size: 28px;
+            color: black; /* Changed to black */
+            font-weight: bold;
+            line-height: 1.6; /* Adds spacing */
         }
         textarea {
             width: 60%;
-            height: 80px;
-            font-size: 18px;
+            height: 120px; /* Enlarged for PC */
+            font-size: 26px; /* Increased font size */
+            font-weight: bold;
+            color: red; /* Text inside textarea changed to bold red */
+        }
+        @media (max-width: 600px) {
+            textarea {
+                width: 300px; /* Matches clock width on mobile */
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Live Analog Clock & Firebase Synced Text</h1>
+    <h1>Eugene's Notes</h1>
     <canvas id="analogClock" width="300" height="300"></canvas>
-    <div id="clock-text"></div>
     <div id="date"></div>
     <textarea id="editableText"></textarea>
 
@@ -39,7 +47,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
             databaseURL: "https://timenote-b256e-default-rtdb.europe-west1.firebasedatabase.app/"
         };
@@ -48,12 +55,10 @@
         const db = getDatabase(app);
         const textRef = ref(db, 'text');
 
-        // Firebase Sync - Update on Input
         document.getElementById('editableText').addEventListener('input', (event) => {
             set(textRef, event.target.value);
         });
 
-        // Firebase Sync - Retrieve Data
         onValue(textRef, (snapshot) => {
             if (snapshot.exists()) {
                 document.getElementById('editableText').value = snapshot.val();
@@ -67,10 +72,23 @@
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "black";
+            // Draw circular clock face
+            ctx.fillStyle = "white";  // White clock face
             ctx.beginPath();
             ctx.arc(150, 150, 140, 0, 2 * Math.PI);
+            ctx.fill();
             ctx.stroke();
+
+            // Draw numbers on the clock
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            for (let num = 1; num <= 12; num++) {
+                let angle = Math.PI / 6 * (num - 3);
+                ctx.fillText(num, 150 + 110 * Math.cos(angle), 150 + 110 * Math.sin(angle));
+            }
 
             function drawHand(length, angle, width) {
                 ctx.lineWidth = width;
@@ -84,26 +102,28 @@
             const minute = now.getMinutes();
             const second = now.getSeconds();
 
-            drawHand(60, Math.PI / 6 * hour - Math.PI / 2, 6);  // Hour hand
-            drawHand(100, Math.PI / 30 * minute - Math.PI / 2, 4);  // Minute hand
-            drawHand(120, Math.PI / 30 * second - Math.PI / 2, 2);  // Second hand
+            drawHand(60, Math.PI / 6 * hour - Math.PI / 2, 6);
+            drawHand(100, Math.PI / 30 * minute - Math.PI / 2, 4);
+            drawHand(120, Math.PI / 30 * second - Math.PI / 2, 2);
         }
 
-        function updateClockText() {
+        function updateDateTime() {
             const now = new Date();
-            document.getElementById('clock-text').innerHTML = now.toLocaleTimeString();
-            document.getElementById('date').innerHTML = now.toLocaleDateString();
+            const fullDate = now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+            const timeString = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+            const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
+            const period = now.getHours() < 12 ? "Morning" : (now.getHours() < 17 ? "Afternoon" : "Evening");
+
+            document.getElementById('date').innerHTML = `${weekday} ${period}   ${timeString}<br>${fullDate}`;
         }
 
-        // Update clock every second
         setInterval(() => {
             drawClock();
-            updateClockText();
+            updateDateTime();
         }, 1000);
 
-        // Initial execution
         drawClock();
-        updateClockText();
+        updateDateTime();
     </script>
 </body>
 </html>
