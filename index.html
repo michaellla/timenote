@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Analog Clock & Remote Text Update</title>
+    <title>Live Analog Clock & Firebase Synced Text</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -37,4 +37,28 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebase
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            databaseURL: "https://timenote-b256e-default-rtdb.europe-west1.firebasedatabase.app/"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const textRef = ref(db, 'text');
+
+        // Update Firebase when user types
+        document.getElementById('editableText').addEventListener('input', (event) => {
+            set(textRef, event.target.value);
+        });
+
+        // Sync text across all devices
+        onValue(textRef, (snapshot) => {
+            if (snapshot.exists()) {
+                document.getElementById('editableText').value = snapshot.val();
+            }
+        });
+
+        function drawClock() {
+            const canvas = document
