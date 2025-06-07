@@ -36,20 +36,23 @@
         }
         textarea {
             width: 60%;
-            height: 180px; /* Enlarged for PC */
+            height: 200px; /* Enlarged for PC */
             font-size: 26px; /* Increased font size */
             font-weight: bold;
             color: red; /* Text inside textarea changed to bold red */
         }
         @media (max-width: 600px) {
+             #date {
+                 font-size: 20px; /* Make the date smaller on mobile */
+        }
             canvas {
                 width: 200px; /* Smaller clock on mobile */
                 height: 200px;
             }
             textarea {
                 font-size: 18px; /* Decrease font size for mobile */
-                width: 90%; /* Expands textarea width */
-                height: 180px; /* Makes textarea larger */
+                width: 97%; /* Expands textarea width */
+                height: 200px; /* Makes textarea larger */
             }
         }
     </style>
