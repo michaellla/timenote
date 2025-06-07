@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Analog Clock & Firebase Synced Text</title>
+    <title>Live Analog Clock & Firebase Synced Texxt</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,12 +48,12 @@
         const db = getDatabase(app);
         const textRef = ref(db, 'text');
 
-        // Update Firebase when user types
+        // Firebase Sync - Update on Input
         document.getElementById('editableText').addEventListener('input', (event) => {
             set(textRef, event.target.value);
         });
 
-        // Sync text across all devices
+        // Firebase Sync - Retrieve Data
         onValue(textRef, (snapshot) => {
             if (snapshot.exists()) {
                 document.getElementById('editableText').value = snapshot.val();
@@ -61,4 +61,49 @@
         });
 
         function drawClock() {
-            const canvas = document
+            const canvas = document.getElementById("analogClock");
+            const ctx = canvas.getContext("2d");
+            const now = new Date();
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "black";
+            ctx.beginPath();
+            ctx.arc(150, 150, 140, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            function drawHand(length, angle, width) {
+                ctx.lineWidth = width;
+                ctx.beginPath();
+                ctx.moveTo(150, 150);
+                ctx.lineTo(150 + length * Math.cos(angle), 150 + length * Math.sin(angle));
+                ctx.stroke();
+            }
+
+            const hour = now.getHours() % 12;
+            const minute = now.getMinutes();
+            const second = now.getSeconds();
+
+            drawHand(60, Math.PI / 6 * hour - Math.PI / 2, 6);  // Hour hand
+            drawHand(100, Math.PI / 30 * minute - Math.PI / 2, 4);  // Minute hand
+            drawHand(120, Math.PI / 30 * second - Math.PI / 2, 2);  // Second hand
+        }
+
+        function updateClockText() {
+            const now = new Date();
+            document.getElementById('clock-text').innerHTML = now.toLocaleTimeString();
+            document.getElementById('date').innerHTML = now.toLocaleDateString();
+        }
+
+        // Update clock every second
+        setInterval(() => {
+            drawClock();
+            updateClockText();
+        }, 1000);
+
+        // Initial execution
+        drawClock();
+        updateClockText();
+    </script>
+</body>
+</html>
