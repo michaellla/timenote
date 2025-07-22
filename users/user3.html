@@ -1,159 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editable Notes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 30px;
-            background-color: #ffffff; /* White background */
-        }
-        #title {
-            font-size: 28px;
-            font-weight: bold;
-            color: black;
-            border: none;
-            text-align: center;
-            width: 80%;
-            margin-bottom: 20px; /* Adds space below title */
-        }
-        canvas {
-            background-color: white; /* White clock face */
-            border-radius: 50%; /* Circular shape */
-            width: 300px;
-            height: 300px;
-            display: block;
-            margin: 0 auto; /* Centers the clock */
-        }
-        #date {
-            font-size: 28px;
-            color: black; /* Changed to black */
-            font-weight: bold;
-            line-height: 1.6; /* Adds spacing */
-        }
-        textarea {
-            width: 60%;
-            height: 200px; /* Enlarged for PC */
-            font-size: 26px; /* Increased font size */
-            font-weight: bold;
-            color: red; /* Text inside textarea changed to bold red */
-        }
-        @media (max-width: 600px) {
-             #date {
-                 font-size: 20px; /* Make the date smaller on mobile */
-        }
-            canvas {
-                width: 200px; /* Smaller clock on mobile */
-                height: 200px;
-            }
-            textarea {
-                font-size: 18px; /* Decrease font size for mobile */
-                width: 97%; /* Expands textarea width */
-                height: 200px; /* Makes textarea larger */
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editable Notes - Dark Mode</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 30px;
+      background-color: #121212;
+      color: #ffffff;
+    }
+    #title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffffff;
+      background-color: #1e1e1e;
+      border: none;
+      text-align: center;
+      width: 60%;
+      margin-bottom: 20px;
+      padding: 8px;
+    }
+    canvas {
+      background-color: #1e1e1e;
+      border-radius: 50%;
+      width: 300px;
+      height: 300px;
+      display: block;
+      margin: 0 auto;
+    }
+    #date {
+      font-size: 28px;
+      color: #ffffff;
+      font-weight: bold;
+      line-height: 1.6;
+    }
+    #lastUpdated {
+      text-align: left;
+      margin-left: 20%;
+      font-size: 20px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    textarea {
+      width: 60%;
+      height: 200px;
+      font-size: 26px;
+      font-weight: bold;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      border: none;
+      padding: 10px;
+    }
+    @media (max-width: 600px) {
+      #date {
+        font-size: 20px;
+      }
+      #title {
+        width: 97%;
+        font-size: 22px;
+      } 
+      textarea {
+        font-size: 18px;
+        width: 97%;
+        height: 200px;
+      }
+      #lastUpdated {
+        font-size: 14px;
+        margin-left: 5%;
+      }
+      canvas {
+        width: 200px;
+        height: 200px;
+      }
+
+    }
+  </style>
 </head>
 <body>
-    <input id="title" type="text" placeholder="Enter Your Notes Title" />
-    <canvas id="analogClock" width="300" height="300"></canvas>
-    <div id="date"></div>
-    <textarea id="editableText"></textarea>
+  <input id="title" type="text" placeholder="Enter Your Notes Title" />
+  <canvas id="analogClock" width="300" height="300"></canvas>
+  <div id="date"></div>
+  <div id="lastUpdated"></div>
+  <textarea id="editableText"></textarea>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
 
-        const firebaseConfig = {
-            databaseURL: "https://timenote-b256e-default-rtdb.europe-west1.firebasedatabase.app/"
-        };
+    const firebaseConfig = {
+      databaseURL: "https://timenote-b256e-default-rtdb.europe-west1.firebasedatabase.app/"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const titleRef = ref(db, "notes/user3_title");
-        const textRef = ref(db, "notes/user3_text");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const titleRef = ref(db, "notes/user3_title");
+    const textRef = ref(db, "notes/user3_text");
 
-        document.getElementById('title').addEventListener('input', (event) => {
-            set(titleRef, event.target.value);
-        });
+    document.getElementById('title').addEventListener('input', (event) => {
+      set(titleRef, event.target.value);
+    });
 
-        document.getElementById('editableText').addEventListener('input', (event) => {
-            set(textRef, event.target.value);
-        });
+    document.getElementById('editableText').addEventListener('input', (event) => {
+      set(textRef, event.target.value);
+      updateLastUpdated();
+    });
 
-        onValue(titleRef, (snapshot) => {
-            if (snapshot.exists()) {
-                document.getElementById('title').value = snapshot.val();
-            }
-        });
+    onValue(titleRef, (snapshot) => {
+      if (snapshot.exists()) {
+        document.getElementById('title').value = snapshot.val();
+      }
+    });
 
-        onValue(textRef, (snapshot) => {
-            if (snapshot.exists()) {
-                document.getElementById('editableText').value = snapshot.val();
-            }
-        });
+    onValue(textRef, (snapshot) => {
+      if (snapshot.exists()) {
+        document.getElementById('editableText').value = snapshot.val();
+        updateLastUpdated();
+      }
+    });
 
-        function drawClock() {
-            const canvas = document.getElementById("analogClock");
-            const ctx = canvas.getContext("2d");
-            const now = new Date();
+    function drawClock() {
+      const canvas = document.getElementById("analogClock");
+      const ctx = canvas.getContext("2d");
+      const now = new Date();
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "white";  // White clock face
-            ctx.beginPath();
-            ctx.arc(150, 150, 140, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+      ctx.fillStyle = "#1e1e1e";
+      ctx.beginPath();
+      ctx.arc(150, 150, 140, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
 
-            ctx.fillStyle = "black";
-            ctx.font = "20px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "20px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
 
-            for (let num = 1; num <= 12; num++) {
-                let angle = Math.PI / 6 * (num - 3);
-                ctx.fillText(num, 150 + 110 * Math.cos(angle), 150 + 110 * Math.sin(angle));
-            }
+      for (let num = 1; num <= 12; num++) {
+        let angle = Math.PI / 6 * (num - 3);
+        ctx.fillText(num, 150 + 110 * Math.cos(angle), 150 + 110 * Math.sin(angle));
+      }
 
-            function drawHand(length, angle, width) {
-                ctx.lineWidth = width;
-                ctx.beginPath();
-                ctx.moveTo(150, 150);
-                ctx.lineTo(150 + length * Math.cos(angle), 150 + length * Math.sin(angle));
-                ctx.stroke();
-            }
+      function drawHand(length, angle, width) {
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.lineTo(150 + length * Math.cos(angle), 150 + length * Math.sin(angle));
+        ctx.stroke();
+      }
 
-            const hour = now.getHours() % 12;
-            const minute = now.getMinutes();
-            const second = now.getSeconds();
+      const hour = now.getHours() % 12;
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
 
-            drawHand(60, Math.PI / 6 * hour - Math.PI / 2, 6);
-            drawHand(100, Math.PI / 30 * minute - Math.PI / 2, 4);
-            drawHand(120, Math.PI / 30 * second - Math.PI / 2, 2);
-        }
+      drawHand(60, Math.PI / 6 * hour - Math.PI / 2, 6);
+      drawHand(100, Math.PI / 30 * minute - Math.PI / 2, 4);
+      drawHand(120, Math.PI / 30 * second - Math.PI / 2, 2);
+    }
 
-        function updateDateTime() {
-            const now = new Date();
-            const fullDate = now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
-            const timeString = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
-            const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
-            const period = now.getHours() < 12 ? "Morning" : (now.getHours() < 17 ? "Afternoon" : "Evening");
+    function updateDateTime() {
+      const now = new Date();
+      const fullDate = now.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+      const timeString = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+      const weekday = now.toLocaleDateString(undefined, { weekday: 'long' });
+      const period = now.getHours() < 12 ? "Morning" : (now.getHours() < 17 ? "Afternoon" : "Evening");
 
-            document.getElementById('date').innerHTML = `${weekday} ${period}   ${timeString}<br>${fullDate}`;
-        }
+      document.getElementById('date').innerHTML = `${weekday} ${period}   ${timeString}<br>${fullDate}`;
+    }
 
-        setInterval(() => {
-            drawClock();
-            updateDateTime();
-        }, 1000);
+    function updateLastUpdated() {
+      const now = new Date();
+      const dateStr = now.toLocaleString(undefined, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      document.getElementById('lastUpdated').innerText = `Last updated: ${dateStr}`;
+    }
 
-        drawClock();
-        updateDateTime();
-    </script>
+    setInterval(() => {
+      drawClock();
+      updateDateTime();
+    }, 1000);
+
+    drawClock();
+    updateDateTime();
+  </script>
 </body>
 </html>
-
